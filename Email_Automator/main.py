@@ -1,21 +1,31 @@
 # smpt-mail.outlook.com
-
 import smtplib
+from email.message import EmailMessage
+
 email_clients = {
     "gmail" : ("smtp.gmail.com", 587),
     "outlook" : ("smtp-mail.outlook.com", 587),
     "hotmail" : ("smtp-mail.outlook.com", 587),
     "yahoo" : ("smtp.mail.yahoo.com", 587)
 }
-client = input("What email client do you use? Choose from the options below\ngmail, outlook/hotmail, or yahoo?")
-if client not in email_clients:
-    client = input("Sorry, we don't support that email client yet. Please use lowercase letters, and make sure there aren't any typos.\n\nWhat email client do you use? Choose from the options below\ngmail, outlook/hotmail, or yahoo?")
+
+loginFile = open("credentials.txt", "r")
+connectionInformation = {}
+for line in loginFile:
+    key = line.split(":")[0]
+    value = line.split(":")[1].rstrip("\n")
+    connectionInformation[key] = value
+
+client = connectionInformation["client"]
 connection = smtplib.SMTP(email_clients[client][0], email_clients[client][1])
 connection.ehlo()
 connection.starttls()
-username = input("What's your username (i.e. your email address)?")
-password = input("What's your password? If you are using gmail, please don't forget to use your app-specific password instead of your actual password")
+print("successful connection to outlook\n")
+
+username = connectionInformation["username"]
+password = connectionInformation["password"]
 connection.login(username, password)
+print("successful login")
 
 recipients = []
 recipient = ""
@@ -26,6 +36,7 @@ while True:
     else:
         recipients.append(recipient)
 
+recipient = input("Who all would you like to send your email to? Type their address in here. Type 'quit' once you're finished.")
 
 subject = input("What's the subject line of your email? Type redo if you want to type it again.")
 while True:
@@ -43,7 +54,18 @@ while True:
 
 email_arg = subject, "\n\n", body
 
+#email = EmailMessage()
+#email['From'] = username
+#email['To'] = recipient
+#email['Subject'] = subject
+#email.set_content(body)
+
+#print(username, recipient, subject, body)
+
+#connection.send_message(email)
+
 for recipient in recipients:
+    print(recipient)
     connection.sendmail(username, recipient, email_arg)
 
 connection.quit()
