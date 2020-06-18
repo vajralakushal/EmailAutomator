@@ -44,7 +44,6 @@ while not found:
         break
     templateName = input(templateName +" was not found, please enter the name of the template you want to use or type quit\n")
 
-
 email = EmailMessage()
 email['From'] = username
 email['To'] = recipient
