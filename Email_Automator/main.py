@@ -53,7 +53,6 @@ prompt_dict = {}
 for prompt in prompts:
     test = input("Please enter value for " + prompt + "\n")
     prompt_dict[prompt] = test
-print(prompt_dict)
 
 message_index = templateSheet.row_values(0).index("Template Message")
 body = templateSheet.cell_value(template_name_row, message_index)
