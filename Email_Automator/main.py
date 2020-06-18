@@ -1,6 +1,8 @@
 # smpt-mail.outlook.com
 import smtplib
 from email.message import EmailMessage
+import xlrd
+import sys
 
 email_clients = {
     "gmail" : ("smtp.gmail.com", 587),
@@ -25,48 +27,33 @@ print("successful connection to outlook\n")
 username = connectionInformation["username"]
 password = connectionInformation["password"]
 connection.login(username, password)
-print("successful login")
+print("successful login\n")
 
-recipients = []
-recipient = ""
-while True:
-    recipient = input("Who all would you like to send your email to? Type their address in here. Type 'quit' once you're finished.")
-    if "quit" in recipient:
+recipient = input("Please enter the email address of the recipient\n")
+
+workbook = xlrd.open_workbook("templates.xlsx")
+templateSheet = workbook.sheet_by_name("templates")
+
+found = False
+templateName = input("Please enter the name of the template you want to use or type quit\n")
+while not found:
+    if "quit" in templateName:
+        sys.exit(0)
+    if templateName in templateSheet.col_values(0):
+        found = True
         break
-    else:
-        recipients.append(recipient)
+    templateName = input(templateName +" was not found, please enter the name of the template you want to use or type quit\n")
 
-recipient = input("Who all would you like to send your email to? Type their address in here. Type 'quit' once you're finished.")
 
-subject = input("What's the subject line of your email? Type redo if you want to type it again.")
-while True:
-    if "redo" in subject:
-        subject = input("What's the subject line of your email? Type redo if you want to type it again.")
-    if "redo" not in subject:
-        break
-
-body = input("What's the body of your email? Type redo if you want to type it again.")
-while True:
-    if "redo" in body:
-        subject = input("What's the body of your email? Type redo if you want to type it again.")
-    if "redo" not in body:
-        break
-
-email_arg = subject, "\n\n", body
-
-#email = EmailMessage()
-#email['From'] = username
-#email['To'] = recipient
+email = EmailMessage()
+email['From'] = username
+email['To'] = recipient
 #email['Subject'] = subject
 #email.set_content(body)
 
-#print(username, recipient, subject, body)
-
 #connection.send_message(email)
 
-for recipient in recipients:
-    print(recipient)
-    connection.sendmail(username, recipient, email_arg)
+
 
 connection.quit()
 
