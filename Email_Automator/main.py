@@ -1,14 +1,20 @@
 # smpt-mail.outlook.com
 import smtplib
+import email
 from email.message import EmailMessage
 import xlrd
 import sys
+import imaplib
 
 email_clients = {
     "gmail" : ("smtp.gmail.com", 587),
     "outlook" : ("smtp-mail.outlook.com", 587),
     "hotmail" : ("smtp-mail.outlook.com", 587),
     "yahoo" : ("smtp.mail.yahoo.com", 587)
+}
+
+imap_clients = {
+    "outlook" : ("imap-mail.outlook.com", 993)
 }
 
 loginFile = open("credentials.txt", "r")
@@ -19,6 +25,9 @@ for line in loginFile:
     connectionInformation[key] = value
 
 client = connectionInformation["client"]
+
+mailbox = imaplib.IMAP4_SSL(imap_clients[client][0], imap_clients[client][1])
+
 connection = smtplib.SMTP(email_clients[client][0], email_clients[client][1])
 connection.ehlo()
 connection.starttls()
@@ -26,8 +35,45 @@ print("successful connection to outlook\n")
 
 username = connectionInformation["username"]
 password = connectionInformation["password"]
+
 connection.login(username, password)
+mailbox.login(username, password)
 print("successful login\n")
+
+
+mailbox.select("INBOX")
+unreadEmails=0
+(retcode, messages) = mailbox.search(None, '(UNSEEN)')
+#print("This is being printed by line 47 " + retcode, messages)
+#print(messages[0].split())
+if retcode == 'OK':
+   for num in messages[0].split() :
+      print ('Processing ')
+      unreadEmails=unreadEmails+1
+      typ, data = mailbox.fetch(num,'(RFC822)')
+      #print(data)
+      for response_part in data:
+        if isinstance(response_part, tuple):
+            original = email.message_from_bytes(data[0][1])
+            
+            print (original['From'])
+            print (original['Subject'])
+            if original.is_multipart():
+                for payload in original.get_payload():
+                    print(payload.get_payload())
+            #else:
+                #print(original.get_payload())
+            
+             
+            typ, data = mailbox.store(num,'+FLAGS','\\Seen')
+
+print (unreadEmails)
+
+
+connection.quit()
+mailbox.close()
+mailbox.logout()
+sys.exit(0)
 
 recipient = input("Please enter the email address of the recipient\n")
 
@@ -74,7 +120,6 @@ email.set_content(body)
 
 connection.send_message(email)
 print("Email was successfully sent to ", recipient)
-
-
 connection.quit()
-
+mailbox.close()
+mailbox.logout()
