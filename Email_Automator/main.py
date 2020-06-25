@@ -1,4 +1,7 @@
 # smpt-mail.outlook.com
+#script process: 
+#read inbox -> parse each email -> put email information into excel sheet -> read excel sheet 
+# -> extrapolate information -> send email to customer 
 import smtplib
 import email
 from email.message import EmailMessage
